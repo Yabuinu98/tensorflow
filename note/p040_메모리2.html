@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>p.040 메모리2</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"></script>
+    <script>
+      const prt = console.log;
+      const t1 = tf.tensor1d([1, 2, 3]);
+      prt(tf.memory()); // 12바이트
+
+      // t1.log().square().round(); // 12바이트짜리 연산 3회 추가
+      // prt(tf.memory()); // 48바이트
+
+      // t1.dispose();
+      // prt(tf.memory()); // 36바이트 => t1만 삭제된듯?
+
+      const rt = tf.tidy(() => {
+        return t1.log().square().round();
+      });
+      t1.dispose();
+      prt(tf.memory()); // 12바이트
+    </script>
+  </head>
+  <body></body>
+</html>

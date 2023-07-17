@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>p.040 메모리1</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"></script>
+    <script>
+      const log = console.log;
+      log(tf.memory());
+
+      /* 한자리가 4바이트 */
+      const a = tf.tensor1d([1, 2, 3, 4]);
+      log(tf.memory()); // 16바이트
+
+      const b = tf.tensor2d([5, 6, 7, 8], [4, 1]);
+      log(tf.memory()); // 32바이트
+
+      a.dispose(); // a만 날렷으므로
+      log(tf.memory()); // b의 16바이트가 남음
+    </script>
+  </head>
+  <body></body>
+</html>
