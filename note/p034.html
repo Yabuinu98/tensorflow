@@ -4,8 +4,41 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"></script>
+    <script>
+      // console.log(tf);
+
+      // 1. tf.sequential() 순차적API 모델 => 'layer'를 만들기 위해
+      const model = tf.sequential();
+
+      // 2. model.add 보스를 생성(=layer를 생성 및 추가) / .dense 보스(=layer)의 속성을 제어
+      // units: 다음 엣지(=경로)로 전달될 갯수
+      model.add(tf.layers.dense({ units: 1, inputShape: [2] }));
+
+      // 3. 로스함수와 옵티마이져
+      // model.add로 생성하고나선 model.compile을 해줘야함 => vuejs의 npm run build or run serve와 비슷
+      model.compile({ loss: "meanSquaredError", optimizer: "adam" });
+
+      /* 4. 데이터를 텐서로 변환 */
+      // tf.tensor2d (values, shape?, dtype?)
+      const xs = tf.tensor2d(
+        [
+          [0, 0],
+          [0, 1],
+          [1, 0],
+          [1, 1],
+        ],
+        [4, 2]
+      );
+      const ys = tf.tensor2d([0, 1, 1, 0], [4, 1]);
+
+      /* 5. 모델을 fit하기 */
+      model.fit(xs, ys).then(() => {
+        // 6. 예측하기
+        model.predict(tf.tensor2d([[0, 1]], [1, 2])).print();
+      });
+    </script>
   </head>
-  <body>
-    ㅎㅇㅎㅇ
-  </body>
+  <body></body>
 </html>
