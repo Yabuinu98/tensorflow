@@ -36,5 +36,8 @@ const fitParm = {
 };
 model.fit(xs, ys, fitParm).then(() => {
   // 5. 1과 0일때의 결과를 예측하고 출력하라
-  model.predict(tf.tensor2d([[1, 0]], [1, 2])).print();
+  model
+    .predict(tf.tensor2d([[1, 0]], [1, 2]))
+    // .round()
+    .print();
 });
