@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Lobster&family=Satisfy&family=Ubuntu:wght@400;500;700&display=swap");
+      #rst {
+        font-size: 50px;
+        font-family: "Lobster", cursive;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>이미지 분류 with MobileNet</h1>
+    <input type="file" id="imageInput" />
+    <img id="img" style="max-width: 300px" />
+    <p id="predictions">인식중...</p>
+    <p id="rst"></p>
+    <script>
+      const imageInput = document.getElementById("imageInput");
+      const img = document.getElementById("img");
+      const pp = document.getElementById("predictions");
+      const rst = document.getElementById("rst");
+
+      imageInput.addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+          img.src = e.target.result;
+          classifyImage(e.target.result);
+        };
+
+        reader.readAsDataURL(file);
+      });
+
+      function classifyImage(imageData) {
+        mobilenet.load().then((model) => {
+          model.classify(img).then((predictions) => {
+            let highestProbability = 0;
+            let highestProbabilityClassName = "";
+
+            predictions.forEach((v) => {
+              if (v.probability > highestProbability) {
+                highestProbability = v.probability;
+                highestProbabilityClassName = v.className;
+              }
+            });
+
+            const formattedPredictions = predictions.map((v) => {
+              return `종은: ${v.className}, 종일확률: ${(
+                v.probability * 100
+              ).toFixed(2)} %`;
+            });
+
+            pp.innerHTML = formattedPredictions.join("<br>");
+
+            rst.innerHTML = `가장 높은 확률로 인식된 종은: ${highestProbabilityClassName}, 종일확률: ${(
+              highestProbability * 100
+            ).toFixed(2)} %`;
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

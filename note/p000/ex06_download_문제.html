@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis"></script>
+    <style>
+      body {
+        background-color: beige;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Welcome to ours Download calculator</h1>
+    <form action="#" onsubmit="return false;" id="uploadForm">
+      <input
+        type="file"
+        id="uploadInput"
+        onchange="predictDownloadTime()"
+        multiple
+      />
+    </form>
+    <p>업로드한 파일의 크기: <span id="fileSize"></span> MB</p>
+    <p>예상 다운로드 시간: <span id="predictedTime"></span> 초</p>
+    <p><small>developed by G.B.O / ver.20230719</small></p>
+    <script>
+      /* 데이터와 모델을 선언하는 함수 */
+      async function setupDataAndModel() {
+        /* 원시데이터 */
+        const trainData = {
+          sizeMB: [
+            0.08, 9.0, 0.001, 0.1, 8.0, 5.0, 0.1, 6.0, 0.05, 0.5, 0.002, 2.0,
+            0.005, 10.0, 0.01, 7.0, 6.0, 5.0, 1.0, 1.0,
+          ],
+          timeSec: [
+            0.135, 0.739, 0.067, 0.126, 0.646, 0.435, 0.069, 0.497, 0.068,
+            0.116, 0.07, 0.289, 0.076, 0.744, 0.083, 0.56, 0.48, 0.399, 0.153,
+            0.149,
+          ],
+        };
+
+        /* 데이터를 텐서로 전환 */
+        const shapeV = [20, 1];
+        const trainTencors = {
+          sizeMB: tf.tensor2d(trainData.sizeMB, shapeV),
+          timeSec: tf.tensor2d(trainData.timeSec, shapeV),
+        };
+
+        /* 모델 생성 */
+        const model = tf.sequential();
+        model.add(tf.layers.dense({ inputShape: [1], units: 1 }));
+        model.compile({ optimizer: "sgd", loss: "meanAbsoluteError" }); //경사하강법, 절대오차
+
+        /* 모델 훈련 */
+        const surface = { name: "show.fitCallbacks", tab: "Training" };
+        await model.fit(trainTencors.sizeMB, trainTencors.timeSec, {
+          epochs: 200,
+          batchSize: 32,
+          callbacks: [
+            tfvis.show.fitCallbacks(surface, ["loss", "acc"]),
+            {
+              onEpochEnd: (e, l) => {
+                console.log("epoch:", e, l);
+              },
+            },
+          ],
+        });
+
+        /* Return the trained model */
+        return model;
+      }
+
+      /* Function to predict download time */
+      async function predictDownloadTime() {
+        /* Get the upload element and file size */
+        const uploadElement = document.getElementById("uploadInput");
+        const uploadSizeMB = uploadElement.files[0].size / (1024 * 1024); // Convert to MB
+        document.getElementById("fileSize").textContent =
+          uploadSizeMB.toFixed(2);
+
+        /* Initialize the model */
+        const model = await setupDataAndModel();
+
+        /* 예측하기 */
+        const predictedTime = model
+          .predict(tf.tensor2d([[uploadSizeMB]]))
+          .dataSync()[0];
+        document.getElementById("predictedTime").textContent =
+          predictedTime.toFixed(2);
+      }
+    </script>
+  </body>
+</html>
