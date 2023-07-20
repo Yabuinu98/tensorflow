@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis"></script>
+  </head>
+  <body>
+    <div id="Training"></div>
+    <script>
+      /* 원시데이터 */
+      const temp = [24, 26, 28, 30]; // y = ax + b
+      const sell = [130, 140, 150, 160]; // y = 5x + 10
+      const tftemp = tf.tensor1d(temp);
+      const tfsell = tf.tensor1d(sell);
+
+      /* 모델을 만들기(함수적API) */
+      const x = tf.input({ shape: [1] });
+      // 은닉층: 입력값이 중간 은닉층을 지나며 함수가 선형 -> 비선형 / 결과가 보다 정확
+      const y = tf.layers.dense({ units: 8, activation: "relu" }).apply(x);
+      const z = tf.layers.dense({ units: 1 }).apply(y);
+      const model = tf.model({ inputs: x, outputs: z });
+      const param = {
+        optimizer: tf.train.adam(),
+        loss: tf.losses.meanSquaredError,
+      };
+      model.compile(param);
+
+      /* 훈련하기 */
+      const fitParam = {
+        epochs: 2000,
+        batchs: 64,
+        callbacks: [
+          tfvis.show.fitCallbacks({ name: "선그래프", tab: "그래프" }, [
+            "loss",
+            "acc",
+          ]),
+          tfvis.show.modelSummary(
+            { name: "Model Summary", tab: "모델 Summary" },
+            model
+          ),
+          {
+            onEpochEnd: (epoch, logs) => {
+              console.log(
+                "epoch:",
+                epoch,
+                logs,
+                "RMSE=>",
+                Math.sqrt(logs.loss)
+              );
+            },
+          },
+        ],
+      };
+      (async () => {
+        await model.fit(tftemp, tfsell, fitParam);
+        await model.predict(tftemp).print();
+      })();
+    </script>
+  </body>
+</html>
