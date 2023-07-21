@@ -34,7 +34,7 @@
         const result = await net.classify(img);
 
         img.print();
-        tf.dispose(img);
+        tf.dispose(img); // 웹 메모리 과부화 방지!!
         res.innerHTML = `결과: ${result[0].className} 인 확률: ${(
           result[0].probability * 100
         ).toFixed(2)}%`;
