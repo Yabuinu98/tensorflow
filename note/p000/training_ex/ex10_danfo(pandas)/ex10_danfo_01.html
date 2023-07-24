@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/danfojs@1.1.2/lib/bundle.min.js"></script>
+  </head>
+  <body>
+    <script>
+      //   const s = new dfd.Series([1, 3, 5, undefined, 6, 8]);
+      const tf = dfd.tensorflow; // get tensorflow lib form danfo
+      const tensor_arr = tf.tensor([12, 13, 14, 15]);
+      const s = new dfd.Series(tensor_arr);
+      s.print();
+    </script>
+  </body>
+</html>

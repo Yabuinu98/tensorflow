@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/danfojs@1.1.2/lib/bundle.min.js"></script>
+  </head>
+  <body>
+    <script>
+      const arr_data = [
+        ["bval1", 10, 43.34, "test"],
+        ["bval2", 20, 3.54, "train"],
+        ["bval3", 30, 60.1, "test"],
+        ["bval4", 40, 78.2, "train"],
+      ];
+
+      const df = new dfd.DataFrame(arr_data);
+      df.print();
+      df.head(2).print();
+      df.tail(2).print();
+
+      const df2 = df.sortIndex({ ascending: false });
+      df2.print();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/danfojs@1.1.2/lib/bundle.min.js"></script>
+    <style>
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      span {
+        width: 30%;
+        margin-right: -5%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="plot_div" style="width: 80%"></div>
+    <div style="display: flex; width: 100%; justify-content: center">
+      <span id="plot_span2"></span>
+      <span id="plot_span3"></span>
+      <span id="plot_span4"></span>
+    </div>
+    <script>
+      dfd.readCSV("./advertising.csv").then((df) => {
+        df.print();
+        df.describe().print();
+        console.log(df.shape);
+        df.plot("plot_div").scatter({
+          config: { conlums: ["TV", "Newspaper", "Radio"] },
+        });
+        df.plot("plot_span2").scatter({ config: { x: "TV", y: "Sales" } });
+        df.plot("plot_span3").scatter({
+          config: { x: "Newspaper", y: "Sales" },
+        });
+        df.plot("plot_span4").scatter({ config: { x: "Radio", y: "Sales" } });
+      });
+    </script>
+  </body>
+</html>
