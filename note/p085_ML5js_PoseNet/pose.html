@@ -14,13 +14,12 @@
         width: 100%;
       }
       video,
-      canvas,
-      button {
+      canvas {
         position: absolute;
       }
-      button {
-        top: 61.5%;
-        left: 39%;
+      #cap_result {
+        position: absolute;
+        top: 70%;
       }
     </style>
   </head>
@@ -38,7 +37,7 @@
         playsinline
       ></video>
       <canvas id="canvas"></canvas>
-      <h3 id="result"></h3>
+      <h3 id="cap_result"></h3>
     </div>
     <script>
       const video = document.getElementById("video");
@@ -64,6 +63,9 @@
         function Capture() {
           model.estimateSinglePose(video).then((pose) => {
             console.log(pose.keypoints);
+            pose.keypoints.forEach((v, i) => {
+              cap_result.innerHTML = `${v.part}의 값은 ${v.score}`;
+            });
           });
         }
         function predict() {
