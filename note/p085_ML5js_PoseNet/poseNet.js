@@ -1,5 +1,7 @@
 const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
+const button = document.querySelector("button");
+const cap_result = document.getElementById("cap_result");
 const context = canvas.getContext("2d");
 const result_label = document.getElementById("result_label");
 navigator.mediaDevices

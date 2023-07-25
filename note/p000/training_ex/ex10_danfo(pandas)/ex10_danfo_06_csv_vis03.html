@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>데이터 가공</title>
     <script src="https://cdn.jsdelivr.net/npm/danfojs@1.1.2/lib/bundle.min.js"></script>
-    <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis"></script>
     <style>
       body {
         width: 100%;
@@ -51,36 +51,18 @@
           df.print();
           df.describe().print();
           console.log(df.$dataIncolumnFormat);
-
-          pre.addEventListener("click", () => {
-            console.log(df);
-            const dfs = df.$dataIncolumnFormat;
-            df.plot("plot_div").scatter({
-              config: { conlums: ["TV", "Newspaper", "Radio"] },
+          const dfs = df.$dataIncolumnFormat;
+          /* 배열안에 배열 형태의 데이터를 가공하기 가장 보편적인 방법!! */
+          const dfa = dfs.map((val, ind) => {
+            return val.map((v, i) => {
+              return { x: v, y: dfs[3][i] }; // x:dfs[ind]
             });
-            df.plot("plot_span2").scatter({ config: { x: "TV", y: "Sales" } });
-            df.plot("plot_span3").scatter({
-              config: { x: "Newspaper", y: "Sales" },
-            });
-            df.plot("plot_span4").scatter({
-              config: { x: "Radio", y: "Sales" },
-            });
-
-            /* vis로 그린 그래프 */
-            // const series1 = dfs[0].map((y, x) => ({ x, y }));
-            // const series2 = dfs[1].map((y, x) => ({ x, y }));
-            // const series3 = dfs[2].map((y, x) => ({ x, y }));
-            // const series4 = dfs[2].map((y, x) => ({ x, y }));
-
-            // const series = ["TV", "Radio", "Newspaper", "Sales"];
-            // const data = {
-            //   values: [series1, series2, series3, series4],
-            //   series,
-            // };
-
-            // const surface = { name: "Scatterplot", tab: "Charts" };
-            // tfvis.render.scatterplot(surface, data);
           });
+
+          const series = ["TV", "Radio", "Newspaper", "Sales"];
+          const data = { values: [dfa[0], dfa[1], dfa[2]], series };
+          const surface = { name: "Scatterplot", tab: "Charts" };
+          tfvis.render.scatterplot(plot, data);
         });
       });
     </script>

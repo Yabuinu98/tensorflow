@@ -9,9 +9,18 @@
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter@3.11.0/dist/tf-converter.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@0.0.6/dist/pose-detection.min.js"></script>
     <style>
+      body {
+        height: 100%;
+        width: 100%;
+      }
       video,
-      canvas {
+      canvas,
+      button {
         position: absolute;
+      }
+      button {
+        top: 61.5%;
+        left: 39%;
       }
     </style>
   </head>
@@ -29,6 +38,8 @@
         playsinline
       ></video>
       <canvas id="canvas"></canvas>
+      <button id="cpt">Capture</button>
+      <h3 id="result"></h3>
     </div>
     <script src="./poseNet.js"></script>
   </body>

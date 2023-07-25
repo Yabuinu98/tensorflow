@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/danfojs@1.1.2/lib/bundle.min.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis"></script>
+    <style>
+      body {
+        width: 100%;
+        height: 100%;
+      }
+      #All {
+        margin: 10px;
+        width: 90%;
+        border: 1px solid gray;
+      }
+      #all {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+      }
+      button,
+      input {
+        margin: 0 10px;
+      }
+      button:hover {
+        box-shadow: inset 2px 2px 3px black;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <input type="file" name="" id="up" />
+    <div id="plot_div" style="width: 70%; height: 500px"></div>
+    <div id="plot_div2" style="width: 70%; height: 500px"></div>
+    <button id="predict">분석</button>
+    <script>
+      const tf = dfd.tensorflow;
+      const plot = document.getElementById("plot_div");
+      const plot2 = document.getElementById("plot_div2");
+      const input = document.getElementById("up");
+      const pre = document.getElementById("predict");
+      input.addEventListener("change", (ch) => {
+        // console.log(ch.target.files[0]);
+        dfd.readCSV(ch.target.files[0]).then((df) => {
+          df.print();
+          df.describe().print();
+          // console.log(df.$dataIncolumnFormat);
+          const dfs = df.$dataIncolumnFormat;
+          /* 데이터 분리 */
+          // 1. 훈련용데이터(80%)와 실험용데이터(20%)로 구분(filter로 걸러내기)
+          // Train
+          const dfTrainAll = dfs.map((val, ind) => {
+            return val.filter((v, i) => {
+              return i % 5 !== 0;
+            });
+          });
+          const TrainTg = dfs[3].filter((v, i) => {
+            return i % 5 !== 0;
+          });
+          // Test
+          const dfTestAll = dfs.map((val, ind) => {
+            return val.filter((v, i) => {
+              return i % 5 == 0;
+            });
+          });
+          const TestTg = dfs[3].filter((v, i) => {
+            return i % 5 == 0;
+          });
+
+          const dfTrainTg = dfTrainAll.pop();
+          const dfTestTg = dfTestAll.pop();
+          const dfTrain = dfTrainAll;
+          const dfTest = dfTestAll;
+
+          const dfTrainVis = dfTrain[0].map((v, i) => {
+            return { x: v, y: dfTrainTg[i] };
+          });
+          const dfTestVis = dfTest[0].map((v, i) => {
+            return { x: v, y: dfTestTg[i] };
+          });
+
+          const model = tf.sequential();
+          model.add(tf.layers.dense({ inputShape: [1], units: 1 }));
+          model.compile({
+            loss: "meanSquaredError",
+            optimizer: "adam",
+            lr: 0.1,
+          });
+
+          const fitParam = {
+            epochs: 100,
+            callbacks: {
+              onEpochEnd: (e, l) => {
+                console.log("epoch:", e, l, "RMSE=>", Math.sqrt(l.loss));
+              },
+            },
+          };
+
+          pre.addEventListener("click", async () => {
+            console.log(df.shape);
+            await model.fit(
+              tf.tensor(dfTrain[0]),
+              tf.tensor(dfTrainTg),
+              fitParam
+            );
+            await model.predict(tf.tensor(dfTest[0])).print();
+            // 여기부터 훈련시킨 데이터를 그래프로 변환
+            const surface = { name: "Scatterplot", tab: "Charts" };
+            // 1.
+            const series = ["Training TV", "Test TV"];
+            const data = { values: [dfTrainVis, dfTestVis], series };
+            await tfvis.render.scatterplot(plot, data);
+            // 2.
+            const series2 = ["Pradict TV", "Test TV"];
+            const data2 = { values: [dfTestTg, dfTestVis], series2 };
+            await tfvis.render.scatterplot(plot2, data2);
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
