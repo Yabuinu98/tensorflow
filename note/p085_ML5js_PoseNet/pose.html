@@ -45,6 +45,8 @@
       const cap_result = document.getElementById("cap_result");
       const context = canvas.getContext("2d");
       const result_label = document.getElementById("result_label");
+      let lastCaptureTime = 0; // To track the last capture time
+
       navigator.mediaDevices
         .getUserMedia({
           video: true,
@@ -58,26 +60,38 @@
         video.onloadeddata = (e) => {
           console.log("정상");
           predict();
-          Capture();
         };
-        function Capture() {
-          model.estimateSinglePose(video).then((pose) => {
-            console.log(pose.keypoints);
-            pose.keypoints.forEach((v, i) => {
-              cap_result.innerHTML = `${v.part}의 값은 ${v.score}`;
-            });
-          });
-        }
         function predict() {
           model.estimateSinglePose(video).then((pose) => {
             canvas.width = video.width;
             canvas.height = video.height;
             drawKeypoints(pose.keypoints, 0.6, context);
             drawSkeleton(pose.keypoints, 0.6, context);
+
+            const currentTime = new Date().getTime();
+            if (currentTime - lastCaptureTime >= 1000) {
+              lastCaptureTime = currentTime;
+
+              const rightHand = pose.keypoints.find(
+                (keypoint) => keypoint.part === "rightWrist"
+              );
+              const leftHand = pose.keypoints.find(
+                (keypoint) => keypoint.part === "leftWrist"
+              );
+
+              if (rightHand && rightHand.position.y < video.height / 2) {
+                cap_result.innerHTML = "오른손을 드셨습니다.";
+              } else if (leftHand && leftHand.position.y < video.height / 2) {
+                cap_result.innerHTML = "왼손을 드셨습니다.";
+              } else {
+                cap_result.innerHTML = "손을 들지 않은 상태입니다.";
+              }
+            }
           });
           requestAnimationFrame(predict);
         }
       });
+
       // 기본예제
       const color = "blue";
       const boundingBoxColor = "red";
