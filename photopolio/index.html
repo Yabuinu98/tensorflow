@@ -15,7 +15,7 @@
         display: flex;
         justify-content: center;
       }
-      div {
+      #All {
         padding: 3%;
         background-color: burlywood;
         margin-top: 5%;
@@ -59,10 +59,16 @@
         padding: 10px;
         border: 3px dashed white;
       }
+      #chart {
+        margin-top: 3%;
+        /* background-color: red; */
+        width: 80%;
+        height: 400px;
+      }
     </style>
   </head>
   <body>
-    <div>
+    <div id="All">
       <!-- 엑셀 파일 올릴곳 -->
       <input type="file" onchange="readExcel()" />
       <!-- 파일 분석 하는곳 -->
@@ -81,11 +87,13 @@
           <td><p id="rst">훈련할 자료가 없습니다.</p></td>
         </tr>
       </table>
+      <div id="chart"></div>
     </div>
 
     <script>
       const p = document.getElementById("rst");
       const input = document.getElementById("input");
+      const chart = document.getElementById("chart");
       const father = []; // traindata = 원인(결과의 변인) / 아빠의 키
       const son = []; // targetdata = 결과(예측해야하는 데이터) / 아들의 키
       /* 엑셀로부터 데이터 추출 */
@@ -156,7 +164,6 @@
       const predictSonHeight = () => {
         p.innerHTML = "데이터 로딩중...";
         const fatherHeight = parseFloat(input.value); // 원하는 아빠 키로 설정
-        console.log(fatherHeight);
 
         const x = father; // traindata = 아빠키
         const y = son; // targetdata = 아들키
@@ -177,21 +184,34 @@
         };
         model.compile(cparam);
 
+        /* Display model summary in the chart area */
+        // 이게 뭘까...
+        tfvis.show.modelSummary(
+          { name: "Model Summary", tab: "Model Summary" },
+          model
+        );
+
         /* 3. 모델로 훈련시작 */
         const fparam = {
           epochs: 1000,
           batchSize: 32,
-          callbacks: {
-            onEpochEnd: (epoch, logs) => {
-              console.log(
-                "epoch:",
-                epoch,
-                logs,
-                "RMSE=>",
-                Math.sqrt(logs.loss)
-              );
+          callbacks: [
+            tfvis.show.fitCallbacks({ name: "선그래프", tab: "그래프" }, [
+              "loss",
+              "acc",
+            ]),
+            {
+              onEpochEnd: (epoch, logs) => {
+                console.log(
+                  "epoch:",
+                  epoch,
+                  logs,
+                  "RMSE=>",
+                  Math.sqrt(logs.loss)
+                );
+              },
             },
-          },
+          ],
         };
         model.fit(xt, yt, fparam).then(() => {
           const prediction = model
