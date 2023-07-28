@@ -1,4 +1,12 @@
 const { defineConfig } = require('@vue/cli-service')
 module.exports = defineConfig({
-  transpileDependencies: true
+  transpileDependencies: true,
+  devServer: {
+    proxy: {
+      '/v1/inference': {
+        target: 'https://api.kakaobrain.com',
+        changeOrigin: true
+      }
+    }
+  }
 })

@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/koGPT.vue'
+import HomeView from '../views/kogpt.vue'
 
 const routes = [
   {
     path: '/',
-    name: 'koGPT',
+    name: 'kogpt',
     component: HomeView
   },
   {
@@ -14,7 +14,7 @@ const routes = [
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
     component: () =>
-      import(/* webpackChunkName: "chat" */ '../views/chatGPT.vue')
+      import(/* webpackChunkName: "chat" */ '../views/chatgpt.vue')
   }
 ]
 
