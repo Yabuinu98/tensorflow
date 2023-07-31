@@ -1,1 +1,57 @@
-<!-- 웹페이지에 캠이 동작하게하고 캠안에 있는 내용이 무엇인지 mobilenet을 사용해서 화면아래에 결과를 출력하라 -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Webpage with Webcam and MobileNet</title>
+  </head>
+  <body>
+    <!-- Create a video element to display the webcam feed -->
+    <video id="videoElement" autoplay></video>
+
+    <!-- Create a canvas element to draw the video frames -->
+    <canvas id="canvasElement"></canvas>
+
+    <!-- Create a paragraph element to display the MobileNet result -->
+    <p id="resultElement"></p>
+
+    <!-- Include the TensorFlow.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+
+    <!-- Include the MobileNet model -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
+
+    <!-- Create a script to access the webcam, run MobileNet, and display the result -->
+    <script>
+      // Function to start the webcam and run MobileNet
+      async function startWebcamAndRunMobileNet() {
+        // Access the webcam
+        const videoElement = document.getElementById('videoElement')
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true
+        })
+        videoElement.srcObject = stream
+
+        // Load the MobileNet model
+        const model = await mobilenet.load()
+
+        // Run MobileNet on each video frame
+        const canvasElement = document.getElementById('canvasElement')
+        const context = canvasElement.getContext('2d')
+        setInterval(async () => {
+          context.drawImage(
+            videoElement,
+            0,
+            0,
+            canvasElement.width,
+            canvasElement.height
+          )
+          const predictions = await model.classify(canvasElement)
+          const resultElement = document.getElementById('resultElement')
+          resultElement.innerText = `MobileNet Result: ${predictions[0].className}`
+        }, 1000 / 30) // Run every 30 frames per second
+      }
+
+      // Call the function to start the webcam and run MobileNet
+      startWebcamAndRunMobileNet()
+    </script>
+  </body>
+</html>
