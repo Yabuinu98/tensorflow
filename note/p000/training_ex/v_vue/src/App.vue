@@ -1,7 +1,8 @@
 <template>
   <nav>
     <router-link to="/">KOGPT(KaKao)</router-link> |
-    <router-link to="/chat">CHATGPT(ver.3.5)</router-link>
+    <router-link to="/chat">CHATGPT(ver.3.5)</router-link> |
+    <router-link to="/chat2">CHATGPT2</router-link>
   </nav>
   <router-view />
 </template>

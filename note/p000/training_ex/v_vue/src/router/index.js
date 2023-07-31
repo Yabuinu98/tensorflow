@@ -15,6 +15,15 @@ const routes = [
     // which is lazy-loaded when the route is visited.
     component: () =>
       import(/* webpackChunkName: "chat" */ '../views/chatgpt.vue')
+  },
+  {
+    path: '/chat2',
+    name: 'chat2',
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () =>
+      import(/* webpackChunkName: "chat2" */ '../views/chatgpt_ver2.vue')
   }
 ]
 
