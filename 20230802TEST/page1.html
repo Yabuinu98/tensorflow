@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Page1: 업로드 데이터파일을 분석및 학습 후 임의의 결과 예측</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-vis"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+      body {
+        background-color: beige;
+        height: 100%;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+      }
+      #All {
+        padding: 3%;
+        background-color: burlywood;
+        margin-top: 5%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 60%;
+        height: 60%;
+        border-radius: 20px;
+        box-shadow: 10px 10px 10px black;
+      }
+      input {
+        padding: 10px;
+        text-align: center;
+        margin-top: 2%;
+      }
+      button {
+        margin-top: 20px;
+        color: white;
+        font-weight: bold;
+        background-color: brown;
+        padding: 10px;
+        border: none;
+        border-radius: 15px;
+        width: 20%;
+      }
+      button:hover {
+        background-color: yellow;
+        color: black;
+        box-shadow: inset 2px 2px 5px black;
+      }
+      table {
+        width: 80%;
+        height: 300px;
+        color: white;
+        text-align: center;
+        border-collapse: collapse;
+        background-color: brown;
+      }
+      tr,
+      td {
+        padding: 10px;
+        border: 3px dashed white;
+      }
+      #chart {
+        margin-top: 3%;
+        /* background-color: red; */
+        width: 80%;
+        height: 400px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="All">
+      <h2>Page1: 업로드 데이터파일을 분석및 학습 후 임의의 결과 예측</h2>
+      <!-- 엑셀 파일 올릴곳 -->
+      <input type="file" onchange="readExcel()" />
+      <!-- 파일 분석 하는곳 -->
+      <button onclick="predictSonHeight()">분석시작</button>
+      <hr />
+      <!-- 예측파트 -->
+      <table>
+        <tr>
+          <td>아빠키</td>
+          <td>
+            <input type="text" id="input" placeholder="값을 입력해주세요" />
+          </td>
+        </tr>
+        <tr>
+          <td>아들키</td>
+          <td><p id="rst">대기중...</p></td>
+        </tr>
+      </table>
+      <div id="chart"></div>
+    </div>
+
+    <script>
+      const p = document.getElementById("rst");
+      const input = document.getElementById("input");
+      const chart = document.getElementById("chart");
+      const father = [];
+      const son = [];
+      /* 엑셀로부터 데이터 추출 */
+      const readExcel = () => {
+        const input = this.event.target;
+        const reader = new FileReader();
+        reader.onload = function () {
+          const data = reader.result;
+          const workBook = XLSX.read(data, { type: "binary" });
+          const x = workBook.Sheets.trainData; // Data 자리는 대상 엑셀파일의 시트이름을 지정
+          //   console.log(x);
+          for (let i = 2; i < 757; i++) {
+            const ftArr = [],
+              sonArr = [];
+            ftArr.push(x["A" + i].v);
+            sonArr.push(x["B" + i].v);
+            father.push(ftArr);
+            son.push(sonArr);
+          }
+          console.log(father, son);
+        };
+        reader.readAsBinaryString(input.files[0]);
+      };
+
+      /* Data 분석파트 */
+      const predictSonHeight = () => {
+        /* 입력(input)부분 예외처리 구문 */
+        if (!input.value) {
+          p.textContent = "아빠키를 입력해주세요.";
+          return;
+        }
+        const fatherHeight = parseFloat(input.value);
+        if (isNaN(fatherHeight)) {
+          p.textContent = "올바른 숫자를 입력해주세요.";
+          return;
+        }
+        if (father.length === 0 || son.length === 0) {
+          p.textContent = "훈련할 자료가 없습니다.";
+          return;
+        }
+        p.innerHTML = "데이터 로딩중...";
+
+        const x = father;
+        const y = son;
+        const xt = tf.tensor(x);
+        const yt = tf.tensor(y);
+
+        /* 2. 모델 만들기 */
+        const xx = tf.input({ shape: [1] });
+        const h1 = tf.layers.dense({ units: 50, activation: "relu" }).apply(xx);
+        const h2 = tf.layers
+          .dense({ units: 25, activation: "sigmoid" })
+          .apply(h1);
+        const yy = tf.layers.dense({ units: 1 }).apply(h2);
+        const model = tf.model({ inputs: xx, outputs: yy });
+        const cparam = {
+          optimizer: tf.train.adam(),
+          loss: tf.losses.meanSquaredError,
+        };
+        model.compile(cparam);
+
+        tfvis.show.modelSummary(
+          { name: "Model Summary", tab: "Model Summary" },
+          model
+        );
+
+        /* 3. 모델로 훈련시작 */
+        const fparam = {
+          epochs: 1000,
+          batchSize: 128,
+          callbacks: [
+            tfvis.show.fitCallbacks({ name: "선그래프", tab: "그래프" }, [
+              "loss",
+              "acc",
+            ]),
+            {
+              onEpochEnd: (epoch, logs) => {
+                console.log(
+                  "epoch:",
+                  epoch,
+                  logs,
+                  "RMSE=>",
+                  Math.sqrt(logs.loss)
+                );
+              },
+            },
+          ],
+        };
+        model.fit(xt, yt, fparam).then(() => {
+          const prediction = model
+            .predict(tf.tensor([[fatherHeight]]))
+            .dataSync()[0];
+          p.innerHTML = `아빠의 키가 ${fatherHeight}cm일 때, 아들의 예상 키는 ${prediction.toFixed(
+            2
+          )}cm입니다.`;
+        });
+      };
+    </script>
+  </body>
+</html>
